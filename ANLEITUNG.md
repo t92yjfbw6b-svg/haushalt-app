@@ -47,9 +47,13 @@ Falls die App vom Home-Bildschirm nach dem Link fragt: den Link einfach in das F
 
 ## Im Alltag
 
-- **Ausgabe eintragen:** großer Plus-Knopf (oder direkt eine Kategorie antippen), Betrag eintippen, Kategorie wählen, Speichern.
+- **Ausgabe eintragen:** Kategorie antippen, Betrag eintippen, oben rechts auf **Sichern**. Notiz und Datum findest du unter **Mehr**.
+- **Gutschrift** (z. B. Freunde zahlen ihren Anteil vom Essen zurück): beim Eintragen oben auf **Gutschrift** umschalten. Der Betrag wird in der Tabelle als Minus eingetragen und füllt das Budget der Kategorie wieder auf.
+- **Vormonat ansehen:** auf den Monatsnamen oben tippen und einen Monat wählen. Dort kannst du auch etwas nachtragen, das Datum steht dann auf dem letzten Tag dieses Monats.
+- **Reihenfolge:** Die Kategorien, die ihr am häufigsten benutzt, rutschen nach oben (jedes Handy merkt sich das selbst).
 - **Falsch eingetragen?** Unten bei „Letzte Einträge“ auf ✕ tippen, dann auf „Löschen?“.
-- **Ohne Netz:** Die Ausgabe wird auf dem Handy gemerkt (oben steht dann „1 offen“) und automatisch nachgeschickt.
+- **Ohne Netz:** Die Ausgabe wird auf dem Handy gemerkt und automatisch nachgeschickt.
+- **Punkt oben rechts:** grün = Tabelle ist aktuell, rot = noch nicht alles gesendet oder kein Netz. Antippen gleicht neu ab.
 - **Balken:** grün = alles gut, gelb = über 80 % verbraucht, rot = Budget aufgebraucht. Der kleine Strich zeigt, wie weit der Monat schon ist. Liegt der Balken links vom Strich, seid ihr im Plan.
 
 ## Monatsabschluss

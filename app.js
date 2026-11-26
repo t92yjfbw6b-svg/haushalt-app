@@ -96,13 +96,26 @@
   let state = LS.get('state', null);      // letzter Stand vom Server
   let queue = LS.get('queue', []);        // noch nicht gesendete Ausgaben
   let removals = LS.get('removals', []);  // noch nicht gesendete Löschungen
+  let months = LS.get('months', []);     // alle Monatsblätter, neueste zuerst
+  let past = LS.get('past', {});          // zwischengespeicherte Vormonate
+  let viewMonth = null;                   // null = aktueller Monat
+  let usage = LS.get('usage', {});        // wie oft welche Kategorie benutzt wurde
   let syncStatus = 'ok';
   let syncing = false;
 
+  /** Kategorien nach Nutzung sortiert (bei Gleichstand wie in der Tabelle). */
+  function byUsage(list) {
+    return list.map((c, i) => ({ c: c, i: i }))
+      .sort((a, b) => (usage[b.c.name] || 0) - (usage[a.c.name] || 0) || a.i - b.i)
+      .map((x) => x.c);
+  }
+
   /** Server-Stand plus eigene, noch nicht gesendete Änderungen. */
   function view() {
-    if (!state) return null;
-    const v = JSON.parse(JSON.stringify(state));
+    const base = viewMonth ? past[viewMonth] : state;
+    if (!base) return null;
+    const v = JSON.parse(JSON.stringify(base));
+    v.isPast = !!viewMonth;
     const byName = {};
     v.categories.forEach((c) => { byName[c.name] = c; });
     const inMonth = (d) => d >= v.start && d <= v.end;
@@ -142,7 +155,8 @@
     const add = queue.slice(0, 25);
     const remove = removals.slice();
     try {
-      const r = await callServer({ key: cfg.k, add: add, remove: remove });
+      const want = viewMonth;
+      const r = await callServer({ key: cfg.k, add: add, remove: remove, month: want || undefined });
       if (!r.ok) {
         if (r.error === 'unauthorized') { setSync('error', 'Link ungültig'); toast('Dieser Link ist gesperrt oder ungültig.'); }
         else { setSync('error', 'Fehler'); toast('Fehler: ' + r.error); }
@@ -152,7 +166,14 @@
       queue = queue.filter((q) => !done.has(q.id));
       const gone = new Set(r.removed || []);
       removals = removals.filter((id) => !gone.has(id));
-      state = r.state;
+      if (r.months) { months = r.months; LS.set('months', months); }
+      if (!r.current || r.state.month === r.current) {
+        state = r.state;
+        if (want && want === r.current) viewMonth = null;
+      } else {
+        past[r.state.month] = r.state;
+        LS.set('past', past);
+      }
       LS.set('queue', queue); LS.set('removals', removals); LS.set('state', state);
       setSync(queue.length ? 'pending' : 'ok');
       render();
@@ -182,17 +203,20 @@
 
   function render() {
     const v = view();
-    if (!v) { $('month').textContent = 'Lädt…'; return; }
+    if (!v) { $('month-name').textContent = 'Lädt…'; return; }
     currency = v.currency || '€';
 
-    $('month').textContent = v.month;
+    $('month-name').textContent = v.month;
     $('navbar-title').textContent = v.month;
+    $('back-now').hidden = !v.isPast;
+    if (v.isPast && state) $('back-now').textContent = 'Zurück zu ' + state.month;
     const start = new Date(v.start + 'T00:00:00'), end = new Date(v.end + 'T00:00:00');
     const totalDays = Math.round((end - start) / 864e5) + 1;
-    const dayNo = Math.min(totalDays, Math.max(1, Math.round((new Date(today() + 'T00:00:00') - start) / 864e5) + 1));
+    const dayNo = v.isPast ? totalDays : Math.min(totalDays, Math.max(1, Math.round((new Date(today() + 'T00:00:00') - start) / 864e5) + 1));
     const timeRatio = dayNo / totalDays;
     const daysLeft = totalDays - dayNo + 1;
-    $('day').textContent = 'Tag ' + dayNo + ' von ' + totalDays + ' · noch ' + daysLeft + (daysLeft === 1 ? ' Tag' : ' Tage');
+    $('day').textContent = v.isPast ? 'Rückblick · abgeschlossener Monat'
+      : 'Tag ' + dayNo + ' von ' + totalDays + ' · noch ' + daysLeft + (daysLeft === 1 ? ' Tag' : ' Tage');
 
     // Übersicht
     let budget = 0, spent = 0;
@@ -201,7 +225,9 @@
     const r = budget > 0 ? spent / budget : 0;
     $('hero-value').textContent = money(free);
     $('hero-value').classList.toggle('neg', free < 0);
-    $('hero-sub').textContent = free >= 0 && daysLeft > 0 ? 'etwa ' + money(Math.max(0, free) / daysLeft) + ' pro Tag' : 'Budget überschritten';
+    $('hero-label').textContent = v.isPast ? 'Übrig geblieben' : 'Noch frei für Ausgaben';
+    $('hero-sub').textContent = v.isPast ? money(spent) + ' von ' + money(budget) + ' ausgegeben'
+      : free >= 0 && daysLeft > 0 ? 'etwa ' + money(Math.max(0, free) / daysLeft) + ' pro Tag' : 'Budget überschritten';
     const ring = $('ring-fill');
     ring.style.strokeDasharray = RING;
     ring.style.strokeDashoffset = RING * (1 - Math.min(1, r));
@@ -210,6 +236,7 @@
     const pill = $('hero-pill');
     const ahead = r - timeRatio;
     pill.className = 'pill ' + (r >= 1 ? 'over' : ahead > 0.05 ? 'warn' : '');
+    pill.hidden = v.isPast && r < 1;
     pill.textContent = r >= 1 ? 'Budget aufgebraucht' : ahead > 0.05 ? 'Etwas schneller als geplant' : 'Im Plan';
     $('stat-spent').textContent = money(spent);
     $('stat-budget').textContent = money(budget);
@@ -219,7 +246,7 @@
     // Kategorien
     const cats = $('cats'), zero = $('cats-zero');
     cats.textContent = ''; zero.textContent = '';
-    v.categories.forEach((c) => {
+    byUsage(v.categories).forEach((c) => {
       const row = el('button', 'row');
       row.append(iconFor(c.name));
       const main = el('div', 'row-main');
@@ -240,7 +267,7 @@
         cats.append(row);
       } else {
         head.append(el('span', 'row-value', c.spent > 0 ? money(c.spent) : ''));
-        main.append(el('div', 'row-sub', c.spent > 0 ? 'ausgegeben diesen Monat' : 'noch nichts ausgegeben'));
+        main.append(el('div', 'row-sub', c.spent > 0 ? 'ausgegeben in diesem Monat' : 'noch nichts ausgegeben'));
         row.append(main);
         zero.append(row);
       }
@@ -267,7 +294,7 @@
       const sub = el('div', 'row-sub', shortDate(e.date) + (e.note ? ' · ' + e.category.trim() : ''));
       if (e.pending) sub.append(el('span', 'pending-tag', ' · wird gesendet'));
       main.append(sub);
-      row.append(main, el('span', 'row-value', money(e.amount)));
+      row.append(main, el('span', 'row-value' + (e.amount < 0 ? ' credit' : ''), (e.amount < 0 ? '+' : '') + money(Math.abs(e.amount))));
       if (e.id) {
         const del = el('button', 'del', '✕');
         del.setAttribute('aria-label', 'Eintrag löschen');
@@ -301,6 +328,22 @@
   // ---------- Eingabe ----------
   let amountStr = '';
   let chosen = null;
+  let credit = false;
+
+  function setCredit(on) {
+    credit = on;
+    $('seg-expense').classList.toggle('on', !on);
+    $('seg-credit').classList.toggle('on', on);
+    $('amount').classList.toggle('credit', on);
+    $('amount-sign').textContent = on ? '+' : '';
+  }
+  function showMore(on) {
+    $('more-rows').hidden = !on;
+    $('more').hidden = on;
+  }
+  $('seg-expense').addEventListener('click', () => setCredit(false));
+  $('seg-credit').addEventListener('click', () => setCredit(true));
+  $('more').addEventListener('click', () => showMore(true));
 
   function openSheet(category) {
     const v = view();
@@ -312,12 +355,16 @@
     $('pick').hidden = !!chosen;
     $('change-cat').hidden = !chosen;
     $('note').value = '';
-    $('date').value = today();
-    $('date').min = v.start; $('date').max = '';
+    $('date').min = v.start;
+    $('date').max = v.isPast ? v.end : '';
+    // Im Rückblick wird nachgetragen: Datum = letzter Tag des Monats, Felder offen
+    $('date').value = v.isPast ? v.end : today();
+    setCredit(false);
+    showMore(v.isPast);
     $('amount-cur').textContent = currency;
     const pick = $('pick');
     pick.textContent = '';
-    v.categories.forEach((c) => {
+    byUsage(v.categories).forEach((c) => {
       const b = el('button');
       const ic = iconFor(c.name);
       b.style.setProperty('--tint', ic.style.getPropertyValue('--tint'));
@@ -362,15 +409,19 @@
   });
 
   $('save').addEventListener('click', () => {
-    const amount = round2(amountValue());
-    if (!(amount > 0) || !chosen) return;
+    const value = round2(amountValue());
+    if (!(value > 0) || !chosen) return;
+    const amount = credit ? -value : value;
     const entry = { id: uid(), date: $('date').value || today(), amount: amount, category: chosen, note: $('note').value.trim() };
+    usage[chosen] = (usage[chosen] || 0) + 1;
+    LS.set('usage', usage);
     queue.push(entry);
     LS.set('queue', queue);
     closeSheet();
     render();
     if (navigator.vibrate) navigator.vibrate(15);
-    toast(navigator.onLine === false ? 'Gespeichert ✓ wird gesendet, sobald Netz da ist' : 'Gespeichert ✓');
+    const what = credit ? 'Gutschrift gespeichert ✓' : 'Gespeichert ✓';
+    toast(navigator.onLine === false ? what + ' · wird gesendet, sobald Netz da ist' : what);
     sync();
   });
   // Tastatur am Laptop: Ziffern, Komma, Rücktaste, Enter, Esc
@@ -397,6 +448,37 @@
     toastTimer = setTimeout(() => { t.hidden = true; }, 2200);
   }
 
+  // ---------- Monat wählen (Tipp auf den Monat) ----------
+  function openMonths() {
+    const list = $('month-list');
+    list.textContent = '';
+    const names = months.length ? months : (state ? [state.month] : []);
+    const shown = viewMonth || (state && state.month);
+    names.forEach((name, i) => {
+      const b = el('button', 'row');
+      const main = el('div', 'row-main');
+      main.append(el('div', 'row-title', name));
+      if (i === 0) main.append(el('div', 'row-sub', 'aktueller Monat'));
+      b.append(main);
+      if (name === shown) b.append(el('span', 'check', '✓'));
+      b.addEventListener('click', () => { closeMonths(); goMonth(i === 0 ? null : name); });
+      list.append(b);
+    });
+    $('months-bg').hidden = false;
+    $('months').hidden = false;
+  }
+  function closeMonths() { $('months').hidden = true; $('months-bg').hidden = true; }
+  function goMonth(name) {
+    viewMonth = name;
+    window.scrollTo(0, 0);
+    render();
+    sync();
+  }
+  $('month').addEventListener('click', openMonths);
+  $('months-bg').addEventListener('click', closeMonths);
+  $('months-close').addEventListener('click', closeMonths);
+  $('back-now').addEventListener('click', () => goMonth(null));
+
   // ---------- Einrichtung ----------
   $('setup-save').addEventListener('click', () => {
     const c = parseLink($('setup-input').value.trim());
@@ -415,11 +497,31 @@
       LS.set('demo', s);
       const cats = s.cats.map((c) => ({ name: c[0], budget: c[1], spent: round2(s.rows.filter((r) => r.category === c[0]).reduce((a, r) => a + r.amount, 0)) }));
       const spent = s.rows.reduce((a, r) => a + r.amount, 0);
+      const prev = Demo.previous(s);
+      if (body.month === prev.month) {
+        return Promise.resolve({ ok: true, added: [], removed: [], months: [s.month, prev.month], current: s.month, state: prev });
+      }
       return new Promise((ok) => setTimeout(() => ok({
-        ok: true, added: (body.add || []).map((e) => e.id), removed: body.remove || [],
+        ok: true, added: (body.add || []).map((e) => e.id), removed: body.remove || [], months: [s.month, prev.month], current: s.month,
         state: { month: s.month, start: s.start, end: s.end, currency: '€', left: round2(s.leftBase - spent), categories: cats,
           entries: s.rows.slice().sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 30), updated: new Date().toISOString() }
       }), 250));
+    },
+    previous(s) {
+      const d = new Date(s.start + 'T00:00:00'); d.setDate(0);
+      const y = d.getFullYear(), m = d.getMonth(), pad = (n) => String(n).padStart(2, '0');
+      const names = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+      const spentBy = { 'Lebensmittel': 372.4, 'Restaurants & Cafés': 168.2, 'Mobilität': 64, 'Haushalt': 41.3, 'Freizeit': 22, 'Geschenke': 30, 'Drogerie': 48.75 };
+      const cats = s.cats.map((c) => ({ name: c[0], budget: c[1], spent: spentBy[c[0]] || 0 }));
+      return {
+        month: names[m] + ' ' + y, start: y + '-' + pad(m + 1) + '-01', end: y + '-' + pad(m + 1) + '-' + pad(d.getDate()),
+        currency: '€', left: 153.35, categories: cats, updated: new Date().toISOString(),
+        entries: [
+          { id: 'p1', date: y + '-' + pad(m + 1) + '-28', amount: 92.1, category: 'Lebensmittel', note: 'Wocheneinkauf' },
+          { id: 'p2', date: y + '-' + pad(m + 1) + '-24', amount: -18, category: 'Restaurants & Cafés', note: 'Anteil von Tom zurück' },
+          { id: 'p3', date: y + '-' + pad(m + 1) + '-23', amount: 54, category: 'Restaurants & Cafés', note: 'Geburtstagsessen' }
+        ]
+      };
     },
     initial() {
       const d = new Date(), y = d.getFullYear(), m = d.getMonth();

@@ -186,6 +186,24 @@ input[type="date"].row-input { -webkit-appearance: none; appearance: none; displ
 .keypad button:active { background: var(--fill-strong); }
 .keypad [data-k="back"], .keypad [data-k=","] { background: transparent; box-shadow: none; }
 
+/* Monat antippen */
+.month-btn { display: inline-flex; align-items: center; gap: 6px; font-size: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; text-align: left; }
+.month-btn:active { opacity: .6; }
+.month-chev { width: 22px; height: 22px; fill: none; stroke: var(--blue); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; margin-top: 4px; }
+.back-now { padding: 6px 0 0; }
+.check { color: var(--blue); font-weight: 600; }
+.months .list { margin: 6px 0 10px; }
+.row-value.credit { color: var(--green); }
+
+/* Ausgabe / Gutschrift */
+.segmented { display: grid; grid-template-columns: 1fr 1fr; background: var(--fill); border-radius: 9px; padding: 2px; margin: 2px auto 6px; max-width: 280px; }
+.segmented button { border-radius: 7px; padding: 6px 0; font-size: 14px; font-weight: 500; color: var(--label); }
+.segmented button.on { background: var(--card); box-shadow: 0 3px 8px rgba(0,0,0,.12), 0 1px 1px rgba(0,0,0,.04); font-weight: 600; }
+@media (prefers-color-scheme: dark) { .segmented button.on { background: #636366; } }
+.amount.credit { color: var(--green); }
+.amount.credit .cur { color: color-mix(in srgb, var(--green) 50%, transparent); }
+#more-rows { margin-bottom: 4px; }
+
 /* ---------- Einrichtung ---------- */
 .setup { min-height: 100dvh; display: grid; place-items: center; padding: var(--pad); }
 .setup-card { width: 100%; max-width: 400px; text-align: center; }
@@ -196,7 +214,7 @@ input[type="date"].row-input { -webkit-appearance: none; appearance: none; displ
 .group { background: var(--card); border-radius: var(--radius); margin-bottom: 14px; }
 .setup-error { color: var(--red) !important; margin-top: 12px !important; }
 
-.toast { position: fixed; z-index: 30; left: 50%; top: calc(var(--safe-top) + 10px); transform: translateX(-50%); background: var(--card); color: var(--label); padding: 11px 18px; border-radius: 999px; font-size: 15px; font-weight: 600; box-shadow: 0 8px 30px rgba(0,0,0,.16); max-width: 92vw; text-align: center; animation: drop .3s cubic-bezier(.2,.9,.25,1); }
+.toast { pointer-events: none; position: fixed; z-index: 30; left: 50%; top: calc(var(--safe-top) + 10px); transform: translateX(-50%); background: var(--card); color: var(--label); padding: 11px 18px; border-radius: 999px; font-size: 15px; font-weight: 600; box-shadow: 0 8px 30px rgba(0,0,0,.16); max-width: 92vw; text-align: center; animation: drop .3s cubic-bezier(.2,.9,.25,1); }
 @keyframes drop { from { transform: translate(-50%, -30px); opacity: 0; } }
 
 .wide-only { display: none; }

@@ -46,8 +46,9 @@
     <main class="layout">
       <div class="col-main">
         <div class="large-title">
-          <h1 id="month">…</h1>
+          <h1><button id="month" class="month-btn" aria-label="Monat wählen"><span id="month-name">…</span><svg class="month-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h1>
           <p id="day"></p>
+          <button id="back-now" class="link small back-now" hidden></button>
         </div>
 
         <section class="card hero">
@@ -57,7 +58,7 @@
             <circle class="ring-tick" id="ring-tick" cx="110" cy="60" r="3.5"></circle>
           </svg>
           <div class="hero-text">
-            <div class="caption">Noch frei für Ausgaben</div>
+            <div class="caption" id="hero-label">Noch frei für Ausgaben</div>
             <div class="hero-value" id="hero-value">–</div>
             <div class="hero-sub" id="hero-sub"></div>
             <div class="pill" id="hero-pill"></div>
@@ -97,10 +98,15 @@
       <span class="sheet-title" id="sheet-title"></span>
       <button id="save" class="link strong" disabled>Sichern</button>
     </div>
-    <div class="amount"><span id="amount-text">0</span><span class="cur" id="amount-cur">€</span></div>
+    <div class="segmented" role="tablist">
+      <button id="seg-expense" class="on" role="tab">Ausgabe</button>
+      <button id="seg-credit" role="tab">Gutschrift</button>
+    </div>
+    <div class="amount" id="amount"><span id="amount-sign"></span><span id="amount-text">0</span><span class="cur" id="amount-cur">€</span></div>
     <div class="center"><button id="change-cat" class="link small" hidden>Kategorie ändern</button></div>
     <div class="pick" id="pick"></div>
-    <div class="list compact">
+    <div class="center"><button id="more" class="link small">Mehr: Notiz und Datum</button></div>
+    <div class="list compact" id="more-rows" hidden>
       <label class="row"><span class="row-label">Notiz</span><input id="note" class="row-input" type="text" maxlength="200" placeholder="optional"></label>
       <label class="row"><span class="row-label">Datum</span><input id="date" class="row-input" type="date"></label>
     </div>
@@ -110,6 +116,18 @@
       <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
       <button data-k=",">,</button><button data-k="0">0</button><button data-k="back" aria-label="Löschen">⌫</button>
     </div>
+  </section>
+
+  <!-- Monat wählen -->
+  <div id="months-bg" class="sheet-bg" hidden></div>
+  <section id="months" class="sheet months" hidden aria-modal="true" role="dialog" aria-labelledby="months-title">
+    <div class="grabber"></div>
+    <div class="sheet-nav">
+      <span></span>
+      <span class="sheet-title" id="months-title">Monat wählen</span>
+      <button id="months-close" class="link strong">Fertig</button>
+    </div>
+    <div class="list" id="month-list"></div>
   </section>
 
   <div id="toast" class="toast" hidden></div>

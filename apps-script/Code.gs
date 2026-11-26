@@ -96,7 +96,14 @@ function verarbeite_(anfrage) {
   }
 
   const heute = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');
-  ergebnis.state = leseStand_(blattFuerDatum_(ss, tz, heute), tz);
+  const aktuell = blattFuerDatum_(ss, tz, heute);
+  const monate = monatsblaetter_(ss).map(function (m) { return m.blatt.getName(); }).reverse();
+  ergebnis.months = monate;
+  ergebnis.current = aktuell.getName();
+  // Auf Wunsch einen anderen (vergangenen) Monat lesen
+  const gewuenscht = typeof anfrage.month === 'string' && monate.indexOf(anfrage.month) >= 0
+    ? ss.getSheetByName(anfrage.month) : aktuell;
+  ergebnis.state = leseStand_(gewuenscht, tz);
   return ergebnis;
 }
 
@@ -107,7 +114,8 @@ function fuegeEin_(ss, tz, eintrag) {
   const datum = String(eintrag.date || '');
   const betrag = Math.round(Number(eintrag.amount) * 100) / 100;
   if (!id || !/^\d{4}-\d{2}-\d{2}$/.test(datum)) throw new Error('Ungültiger Eintrag');
-  if (!(betrag > 0) || betrag > 100000) throw new Error('Ungültiger Betrag');
+  // Positiv = Ausgabe, negativ = Gutschrift (z. B. Geld von Freunden zurück)
+  if (!betrag || Math.abs(betrag) > 100000) throw new Error('Ungültiger Betrag');
 
   const blatt = blattFuerDatum_(ss, tz, datum);
   const anzahl = LETZTE_ZEILE - ERSTE_ZEILE + 1;
