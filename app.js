@@ -168,9 +168,12 @@
   function setSync(s, text) {
     syncStatus = s;
     const dot = $('sync-dot');
-    dot.className = 'sync-dot' + (s === 'busy' ? ' busy' : '') + (s === 'pending' ? ' pending' : '') + (s === 'offline' ? ' offline' : '') + (s === 'error' ? ' error' : '');
+    dot.className = 'status-dot' + (s === 'busy' ? ' busy' : '');
     const n = queue.length + removals.length;
-    $('sync-text').textContent = text || (s === 'busy' ? 'Lädt…' : n ? n + ' offen' : s === 'offline' ? 'Offline' : 'Aktuell');
+    const label = text || (s === 'busy' ? 'Wird abgeglichen' : n ? n + ' noch nicht gesendet' : s === 'offline' ? 'Offline' : 'Tabelle ist aktuell');
+    $('sync-text').textContent = label;
+    $('refresh').title = label;
+    dot.classList.toggle('stale', s !== 'ok' && !(s === 'busy' && n === 0));
   }
 
   // ---------- Anzeige ----------
@@ -304,6 +307,10 @@
     if (!v) return;
     amountStr = '';
     chosen = category || null;
+    // Aus einer Kategorie geöffnet: Kategorie steht fest, Auswahl nur auf Wunsch
+    $('sheet-title').textContent = chosen ? chosen.trim() : 'Neue Ausgabe';
+    $('pick').hidden = !!chosen;
+    $('change-cat').hidden = !chosen;
     $('note').value = '';
     $('date').value = today();
     $('date').min = v.start; $('date').max = '';
@@ -320,6 +327,7 @@
       b.addEventListener('click', () => {
         chosen = c.name;
         pick.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+        $('sheet-title').textContent = c.name.trim();
         updateSheet();
       });
       pick.append(b);
@@ -375,10 +383,9 @@
     if (k) { ev.preventDefault(); const b = $('keypad').querySelector('[data-k="' + k + '"]'); if (b) b.click(); }
     else if (ev.key === 'Enter') { ev.preventDefault(); $('save').click(); }
   });
+  $('change-cat').addEventListener('click', () => { $('pick').hidden = false; $('change-cat').hidden = true; });
   $('cancel').addEventListener('click', closeSheet);
   $('sheet-bg').addEventListener('click', closeSheet);
-  $('fab').addEventListener('click', () => openSheet(null));
-  $('add-top').addEventListener('click', () => openSheet(null));
   window.addEventListener('scroll', () => { $('navbar').classList.toggle('scrolled', window.scrollY > 40); }, { passive: true });
   $('refresh').addEventListener('click', () => sync());
 

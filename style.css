@@ -40,7 +40,11 @@
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; touch-action: manipulation; }
+button, a, input, label { touch-action: manipulation; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.center { text-align: center; margin: -6px 0 10px; }
+.link.small { font-size: 15px; }
 html, body { margin: 0; background: var(--bg); color: var(--label); }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
@@ -65,16 +69,14 @@ button { border: 0; background: none; padding: 0; cursor: pointer; }
 .navbar-inner { max-width: 1120px; margin: 0 auto; height: 44px; padding: 0 var(--pad); display: flex; align-items: center; justify-content: flex-end; gap: 12px; position: relative; }
 .navbar-title { position: absolute; left: 50%; transform: translateX(-50%); font-weight: 600; opacity: 0; transition: opacity .2s; white-space: nowrap; }
 .navbar.scrolled .navbar-title { opacity: 1; }
-.status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--label-2); padding: 6px 10px; border-radius: 999px; background: var(--fill); }
-.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-.status-dot.pending { background: var(--orange); }
-.status-dot.offline { background: var(--label-3); }
-.status-dot.error { background: var(--red); }
+.status { width: 44px; height: 44px; margin-right: -10px; display: grid; place-items: center; border-radius: 50%; }
+.status-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 22%, transparent); transition: background .3s, box-shadow .3s; }
+.status-dot.stale { background: var(--red); box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 22%, transparent); }
 .status-dot.busy { animation: pulse 1s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: .25; } }
 
 /* ---------- Seitenaufbau ---------- */
-.layout { max-width: 1120px; margin: 0 auto; padding: 0 var(--pad) calc(96px + var(--safe-bottom)); }
+.layout { max-width: 1120px; margin: 0 auto; padding: 0 var(--pad) calc(32px + var(--safe-bottom)); }
 .large-title { padding: 2px 4px 14px; }
 .large-title h1 { margin: 0; font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: 0.37px; }
 .large-title p { margin: 2px 0 0; color: var(--label-2); font-size: 15px; letter-spacing: -0.24px; }

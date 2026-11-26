@@ -38,9 +38,8 @@
       <div class="navbar-inner">
         <span class="navbar-title" id="navbar-title"></span>
         <button id="refresh" class="status" aria-label="Aktualisieren">
-          <span class="status-dot" id="sync-dot"></span><span id="sync-text"></span>
+          <span class="status-dot" id="sync-dot"></span><span id="sync-text" class="sr-only"></span>
         </button>
-        <button id="add-top" class="btn-filled btn-small add-top">＋ Ausgabe</button>
       </div>
     </header>
 
@@ -87,9 +86,6 @@
       </div>
     </main>
 
-    <div class="toolbar">
-      <button id="fab" class="btn-filled btn-large">＋ Ausgabe hinzufügen</button>
-    </div>
   </div>
 
   <!-- Eingabe -->
@@ -98,10 +94,11 @@
     <div class="grabber"></div>
     <div class="sheet-nav">
       <button id="cancel" class="link">Abbrechen</button>
-      <span class="sheet-title" id="sheet-title">Neue Ausgabe</span>
+      <span class="sheet-title" id="sheet-title"></span>
       <button id="save" class="link strong" disabled>Sichern</button>
     </div>
     <div class="amount"><span id="amount-text">0</span><span class="cur" id="amount-cur">€</span></div>
+    <div class="center"><button id="change-cat" class="link small" hidden>Kategorie ändern</button></div>
     <div class="pick" id="pick"></div>
     <div class="list compact">
       <label class="row"><span class="row-label">Notiz</span><input id="note" class="row-input" type="text" maxlength="200" placeholder="optional"></label>

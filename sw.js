@@ -1,5 +1,5 @@
 /* Speichert die App auf dem Handy, damit sie auch ohne Netz startet. */
-const CACHE = 'haushalt-v2';
+const CACHE = 'haushalt-v3';
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest',
   'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 
