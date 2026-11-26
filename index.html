@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f4ef">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Haushalt">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Haushalt</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ohne Link: Einrichtung -->
+  <section id="setup" class="screen" hidden>
+    <div class="setup-box">
+      <div class="setup-icon">🏠</div>
+      <h1>Haushalt</h1>
+      <p>Öffne bitte deinen persönlichen Link, den du bekommen hast. Oder füge ihn hier ein:</p>
+      <input id="setup-input" type="url" placeholder="https://…#s=…&amp;k=…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button id="setup-save" class="btn-primary">Verbinden</button>
+      <p class="hint" id="setup-error" hidden>Der Link ist nicht vollständig.</p>
+    </div>
+  </section>
+
+  <!-- Hauptansicht -->
+  <section id="main" class="screen" hidden>
+    <header class="top">
+      <div>
+        <div class="month" id="month">…</div>
+        <div class="day" id="day"></div>
+      </div>
+      <button id="refresh" class="icon-btn" aria-label="Aktualisieren">
+        <span class="sync-dot" id="sync-dot"></span>
+        <span class="sync-text" id="sync-text"></span>
+      </button>
+    </header>
+
+    <div class="hero">
+      <div class="hero-label">Noch frei für Ausgaben</div>
+      <div class="hero-value" id="hero-value">–</div>
+      <div class="hero-bar"><div class="hero-fill" id="hero-fill"></div><div class="marker" id="hero-marker"></div></div>
+      <div class="hero-sub" id="hero-sub"></div>
+    </div>
+
+    <h2 class="section">Kategorien</h2>
+    <div id="cats" class="cats"></div>
+
+    <h2 class="section">Letzte Einträge</h2>
+    <div id="entries" class="entries"></div>
+    <div class="bottom-space"></div>
+
+    <button id="fab" class="fab" aria-label="Ausgabe eintragen">＋</button>
+  </section>
+
+  <!-- Eingabe -->
+  <div id="sheet-bg" class="sheet-bg" hidden></div>
+  <section id="sheet" class="sheet" hidden aria-modal="true" role="dialog">
+    <div class="sheet-handle"></div>
+    <div class="amount" id="amount"><span id="amount-text">0</span><span class="cur" id="amount-cur">€</span></div>
+    <div class="keypad" id="keypad">
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+      <button data-k=",">,</button><button data-k="0">0</button><button data-k="back" aria-label="Löschen">⌫</button>
+    </div>
+    <div class="pick-label">Kategorie</div>
+    <div class="pick" id="pick"></div>
+    <div class="extra">
+      <input id="note" type="text" maxlength="200" placeholder="Notiz (optional)">
+      <input id="date" type="date">
+    </div>
+    <div class="sheet-actions">
+      <button id="cancel" class="btn-ghost">Abbrechen</button>
+      <button id="save" class="btn-primary" disabled>Speichern</button>
+    </div>
+  </section>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
