@@ -87,3 +87,20 @@ Falls die App vom Home-Bildschirm nach dem Link fragt: den Link einfach in das F
 ## Script später aktualisieren
 
 Wenn Claude dir eine neue Version von `Code.gs` gibt: Code ersetzen, speichern, dann **Bereitstellen > Bereitstellungen verwalten > Stift-Symbol > Version: Neue Version > Bereitstellen**. Die Links bleiben gleich.
+
+## Läuft ohne Claude
+
+Die App braucht Claude nicht. Alles läuft bei euch:
+
+- **App:** GitHub Pages liefert die Dateien aus diesem Repository aus. Kostenlos, solange das Repository öffentlich ist. Keine fremden Server, keine Abhängigkeiten aus dem Internet.
+- **Brücke und Monatswechsel:** laufen als Google-Apps-Script in deinem Google-Konto, auch der automatische Monatswechsel am 1. jedes Monats.
+- **Daten:** nur in eurer Google-Tabelle.
+
+Damit alle Verknüpfungen bestehen bleiben:
+
+- Repository **nicht umbenennen** und **nicht auf privat stellen**, sonst ändert sich die App-Adresse oder Pages schaltet ab.
+- Beim Script immer **„Bereitstellungen verwalten > Bearbeiten > Neue Version“** nehmen, nie „Neue Bereitstellung“. Sonst ändert sich die Adresse und die Links gehen nicht mehr.
+- Alte Monatsblätter **nicht löschen**: Der Rollover im Folgemonat zeigt auf das Blatt davor. Ausblenden (Rechtsklick > Blatt ausblenden) ist kein Problem.
+- Blatt „Blanko“ und die Namen der Monatsblätter nicht ändern.
+- Prüfen, ob der Monatswechsel eingerichtet ist: in Apps Script links auf das **Wecker-Symbol (Trigger)**. Dort muss `monatswechsel` stehen. Falls nicht: `einrichten` noch einmal ausführen. Das ist jederzeit gefahrlos möglich.
+- Falls Google sich meldet, dass das Script Fehler hatte (E-Mail „Summary of failures“): `monatswechsel` einmal von Hand ausführen. Fehlende Monate werden dabei nachgeholt.
