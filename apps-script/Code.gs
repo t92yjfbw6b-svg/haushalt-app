@@ -12,7 +12,7 @@
 // ===== Einstellungen ========================================================
 
 /** Adresse der App auf GitHub Pages (wird nach dem Veröffentlichen eingetragen). */
-const APP_URL = 'https://DEIN-NAME.github.io/haushalt-app/';
+const APP_URL = 'https://t92yjfbw6b-svg.github.io/haushalt-app/';
 
 /** Wer bekommt einen eigenen Link? */
 const PERSONEN = ['Handy1', 'Handy2'];
