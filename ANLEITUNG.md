@@ -26,11 +26,13 @@ Die App besteht aus zwei Teilen:
 
 > „Zugriff: Jeder“ heißt nur, dass die Brücke erreichbar ist. Ohne den geheimen Schlüssel aus eurem Link antwortet sie mit „unauthorized“ und gibt nichts heraus.
 
-## Teil 2: App veröffentlichen (macht Claude)
+## Teil 2: App veröffentlichen (einmalig, 1 Minute)
 
-Sobald GitHub verbunden ist, legt Claude das Projekt an und schaltet GitHub Pages ein. Danach bekommst du die Adresse, z. B. `https://deinname.github.io/haushalt-app/`.
+1. Öffne auf github.com dein Repository `haushalt-app` > **Settings** > links **Pages**.
+2. Bei **Source** „Deploy from a branch“ wählen, darunter **Branch: main** und **/ (root)**, dann **Save**.
+3. Nach 1 bis 2 Minuten ist die App erreichbar unter `https://t92yjfbw6b-svg.github.io/haushalt-app/`.
 
-Trage diese Adresse in `Code.gs` ganz oben bei `APP_URL` ein, speichere, wähle die Funktion **linksAnzeigen** und klicke auf **Ausführen**. Jetzt stimmen die Links im Protokoll.
+Die Adresse steht schon in `Code.gs` bei `APP_URL`. Hast du Teil 1 schon vorher gemacht, ist alles gut: Die Links im Protokoll stimmen bereits.
 
 ## Teil 3: App auf die iPhones holen
 
