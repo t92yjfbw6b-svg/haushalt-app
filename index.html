@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f6f4ef">
+  <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -18,67 +19,99 @@
 </head>
 <body>
   <!-- Ohne Link: Einrichtung -->
-  <section id="setup" class="screen" hidden>
-    <div class="setup-box">
-      <div class="setup-icon">🏠</div>
+  <section id="setup" class="setup" hidden>
+    <div class="setup-card">
+      <img src="icons/icon-192.png" alt="" class="setup-icon">
       <h1>Haushalt</h1>
-      <p>Öffne bitte deinen persönlichen Link, den du bekommen hast. Oder füge ihn hier ein:</p>
-      <input id="setup-input" type="url" placeholder="https://…#s=…&amp;k=…" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <button id="setup-save" class="btn-primary">Verbinden</button>
-      <p class="hint" id="setup-error" hidden>Der Link ist nicht vollständig.</p>
+      <p>Öffne deinen persönlichen Link oder füge ihn hier ein.</p>
+      <div class="group">
+        <input id="setup-input" class="field" type="url" placeholder="Persönlicher Link" autocomplete="off" autocapitalize="off" spellcheck="false">
+      </div>
+      <button id="setup-save" class="btn-filled">Verbinden</button>
+      <p class="setup-error" id="setup-error" hidden>Der Link ist nicht vollständig.</p>
     </div>
   </section>
 
   <!-- Hauptansicht -->
-  <section id="main" class="screen" hidden>
-    <header class="top">
-      <div>
-        <div class="month" id="month">…</div>
-        <div class="day" id="day"></div>
+  <div id="main" hidden>
+    <header class="navbar" id="navbar">
+      <div class="navbar-inner">
+        <span class="navbar-title" id="navbar-title"></span>
+        <button id="refresh" class="status" aria-label="Aktualisieren">
+          <span class="status-dot" id="sync-dot"></span><span id="sync-text"></span>
+        </button>
+        <button id="add-top" class="btn-filled btn-small add-top">＋ Ausgabe</button>
       </div>
-      <button id="refresh" class="icon-btn" aria-label="Aktualisieren">
-        <span class="sync-dot" id="sync-dot"></span>
-        <span class="sync-text" id="sync-text"></span>
-      </button>
     </header>
 
-    <div class="hero">
-      <div class="hero-label">Noch frei für Ausgaben</div>
-      <div class="hero-value" id="hero-value">–</div>
-      <div class="hero-bar"><div class="hero-fill" id="hero-fill"></div><div class="marker" id="hero-marker"></div></div>
-      <div class="hero-sub" id="hero-sub"></div>
+    <main class="layout">
+      <div class="col-main">
+        <div class="large-title">
+          <h1 id="month">…</h1>
+          <p id="day"></p>
+        </div>
+
+        <section class="card hero">
+          <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="ring-track" cx="60" cy="60" r="50"></circle>
+            <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="50"></circle>
+            <circle class="ring-tick" id="ring-tick" cx="110" cy="60" r="3.5"></circle>
+          </svg>
+          <div class="hero-text">
+            <div class="caption">Noch frei für Ausgaben</div>
+            <div class="hero-value" id="hero-value">–</div>
+            <div class="hero-sub" id="hero-sub"></div>
+            <div class="pill" id="hero-pill"></div>
+          </div>
+        </section>
+
+        <section class="card stats">
+          <div><div class="caption">Ausgegeben</div><div class="stat" id="stat-spent">–</div></div>
+          <div><div class="caption">Budget</div><div class="stat" id="stat-budget">–</div></div>
+          <div><div class="caption">Gesamt frei</div><div class="stat" id="stat-left">–</div></div>
+        </section>
+
+        <h2 class="group-title wide-only">Letzte Einträge</h2>
+        <div class="list wide-only" id="entries-wide"></div>
+      </div>
+
+      <div class="col-side">
+        <h2 class="group-title">Kategorien</h2>
+        <div class="list" id="cats"></div>
+
+        <h2 class="group-title" id="cats-zero-title">Ohne Budget</h2>
+        <div class="list" id="cats-zero"></div>
+
+        <h2 class="group-title narrow-only">Letzte Einträge</h2>
+        <div class="list narrow-only" id="entries"></div>
+      </div>
+    </main>
+
+    <div class="toolbar">
+      <button id="fab" class="btn-filled btn-large">＋ Ausgabe hinzufügen</button>
     </div>
-
-    <h2 class="section">Kategorien</h2>
-    <div id="cats" class="cats"></div>
-
-    <h2 class="section">Letzte Einträge</h2>
-    <div id="entries" class="entries"></div>
-    <div class="bottom-space"></div>
-
-    <button id="fab" class="fab" aria-label="Ausgabe eintragen">＋</button>
-  </section>
+  </div>
 
   <!-- Eingabe -->
   <div id="sheet-bg" class="sheet-bg" hidden></div>
-  <section id="sheet" class="sheet" hidden aria-modal="true" role="dialog">
-    <div class="sheet-handle"></div>
-    <div class="amount" id="amount"><span id="amount-text">0</span><span class="cur" id="amount-cur">€</span></div>
+  <section id="sheet" class="sheet" hidden aria-modal="true" role="dialog" aria-labelledby="sheet-title">
+    <div class="grabber"></div>
+    <div class="sheet-nav">
+      <button id="cancel" class="link">Abbrechen</button>
+      <span class="sheet-title" id="sheet-title">Neue Ausgabe</span>
+      <button id="save" class="link strong" disabled>Sichern</button>
+    </div>
+    <div class="amount"><span id="amount-text">0</span><span class="cur" id="amount-cur">€</span></div>
+    <div class="pick" id="pick"></div>
+    <div class="list compact">
+      <label class="row"><span class="row-label">Notiz</span><input id="note" class="row-input" type="text" maxlength="200" placeholder="optional"></label>
+      <label class="row"><span class="row-label">Datum</span><input id="date" class="row-input" type="date"></label>
+    </div>
     <div class="keypad" id="keypad">
       <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
       <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
       <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
       <button data-k=",">,</button><button data-k="0">0</button><button data-k="back" aria-label="Löschen">⌫</button>
-    </div>
-    <div class="pick-label">Kategorie</div>
-    <div class="pick" id="pick"></div>
-    <div class="extra">
-      <input id="note" type="text" maxlength="200" placeholder="Notiz (optional)">
-      <input id="date" type="date">
-    </div>
-    <div class="sheet-actions">
-      <button id="cancel" class="btn-ghost">Abbrechen</button>
-      <button id="save" class="btn-primary" disabled>Speichern</button>
     </div>
   </section>
 

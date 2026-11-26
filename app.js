@@ -58,14 +58,39 @@
     return e;
   }
 
-  const EMOJI = [
-    [/lebensmittel|einkauf|supermarkt/i, '🛒'], [/restaurant|caf|essen/i, '☕'],
-    [/mobil|auto|tank|bahn/i, '🚗'], [/anschaffung.*baby/i, '🧸'], [/baby|kind/i, '🍼'],
-    [/wohnung|möbel/i, '🛋️'], [/haushalt/i, '🧽'], [/gesund|apothe|arzt/i, '💊'],
-    [/entertain|freizeit|kino/i, '🎬'], [/geschenk/i, '🎁'], [/drogerie/i, '🧴'],
-    [/bargeld|fun/i, '💶'], [/hochzeit/i, '💍'], [/kleid|mode/i, '👕'], [/urlaub|reise/i, '🏖️']
+  // Symbole (Linien-Icons) und Farben im iOS-Stil
+  const P = {
+    cart: '<circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/><path d="M2 3h3l2.4 11.2a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.5L21.5 7H6"/>',
+    cup: '<path d="M17 8h1.5a3.5 3.5 0 0 1 0 7H17"/><path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M7 2.5v2.5M11 2.5v2.5"/>',
+    car: '<path d="M3 16v-4l2.2-5.2A2 2 0 0 1 7 5.5h10a2 2 0 0 1 1.8 1.3L21 12v4"/><path d="M3 12h18M3 16h18"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/>',
+    home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+    box: '<path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7z"/><path d="M3.3 7 12 12l8.7-5M12 22V12"/>',
+    pulse: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+    play: '<circle cx="12" cy="12" r="9.5"/><path d="M10 8.5v7l6-3.5z"/>',
+    gift: '<path d="M20 12v9H4v-9M2 7h20v5H2zM12 21V7"/><path d="M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"/>',
+    star: '<path d="m12 2.5 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5-4.8-4.6 6.6-.9z"/>',
+    smile: '<circle cx="12" cy="12" r="9.5"/><path d="M8.5 14.5s1.3 2 3.5 2 3.5-2 3.5-2M9 9.5h.01M15 9.5h.01"/>',
+    drop: '<path d="M12 2.7 17.7 8.3a8 8 0 1 1-11.4 0z"/>',
+    cash: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>',
+    heart: '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>',
+    bag: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+    sun: '<circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2M12 20.5v2M4.6 4.6 6 6M18 18l1.4 1.4M1.5 12h2M20.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/>',
+    tag: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><path d="M7 7h.01"/>'
+  };
+  const ICONS = [
+    [/lebensmittel|einkauf|supermarkt/i, 'cart', '#34c759'], [/restaurant|caf|essen/i, 'cup', '#ff9500'],
+    [/mobil|auto|tank|bahn/i, 'car', '#007aff'], [/anschaffung.*baby/i, 'star', '#ffcc00'], [/baby|kind/i, 'smile', '#00c7be'],
+    [/wohnung|möbel|anschaffung/i, 'box', '#a2845e'], [/haushalt/i, 'home', '#30b0c7'], [/gesund|apothe|arzt/i, 'pulse', '#ff3b30'],
+    [/entertain|freizeit|kino/i, 'play', '#af52de'], [/geschenk/i, 'gift', '#ff2d55'], [/drogerie/i, 'drop', '#32ade6'],
+    [/bargeld|fun/i, 'cash', '#5856d6'], [/hochzeit/i, 'heart', '#ff375f'], [/kleid|mode/i, 'bag', '#bf5af2'], [/urlaub|reise/i, 'sun', '#ff9f0a']
   ];
-  const emojiFor = (name) => (EMOJI.find((x) => x[0].test(name)) || [0, '🏷️'])[1];
+  function iconFor(name) {
+    const m = ICONS.find((x) => x[0].test(name)) || [0, 'tag', '#8e8e93'];
+    const box = el('span', 'icon');
+    box.style.setProperty('--tint', m[2]);
+    box.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + P[m[1]] + '</svg>';
+    return box;
+  }
 
   // ---------- Daten ----------
   let state = LS.get('state', null);      // letzter Stand vom Server
@@ -149,7 +174,8 @@
   }
 
   // ---------- Anzeige ----------
-  function colorFor(ratio) { return ratio >= 1 ? 'red' : ratio >= 0.8 ? 'yellow' : ''; }
+  function level(ratio) { return ratio >= 1 ? 'over' : ratio >= 0.8 ? 'warn' : ''; }
+  const RING = 2 * Math.PI * 50;
 
   function render() {
     const v = view();
@@ -157,69 +183,94 @@
     currency = v.currency || '€';
 
     $('month').textContent = v.month;
+    $('navbar-title').textContent = v.month;
     const start = new Date(v.start + 'T00:00:00'), end = new Date(v.end + 'T00:00:00');
     const totalDays = Math.round((end - start) / 864e5) + 1;
     const dayNo = Math.min(totalDays, Math.max(1, Math.round((new Date(today() + 'T00:00:00') - start) / 864e5) + 1));
     const timeRatio = dayNo / totalDays;
-    $('day').textContent = 'Tag ' + dayNo + ' von ' + totalDays;
+    const daysLeft = totalDays - dayNo + 1;
+    $('day').textContent = 'Tag ' + dayNo + ' von ' + totalDays + ' · noch ' + daysLeft + (daysLeft === 1 ? ' Tag' : ' Tage');
 
-    // Gesamt über alle Kategorien
+    // Übersicht
     let budget = 0, spent = 0;
-    v.categories.forEach((c) => { budget += c.budget; spent += c.spent; });
+    v.categories.forEach((c) => { if (c.budget > 0) budget += c.budget; spent += c.spent; });
     const free = round2(budget - spent);
+    const r = budget > 0 ? spent / budget : 0;
     $('hero-value').textContent = money(free);
     $('hero-value').classList.toggle('neg', free < 0);
-    const r = budget > 0 ? spent / budget : 0;
-    $('hero-fill').style.width = Math.min(100, r * 100) + '%';
-    $('hero-fill').className = 'hero-fill ' + colorFor(r);
-    $('hero-marker').style.left = (timeRatio * 100) + '%';
-    $('hero-sub').textContent = money(spent) + ' von ' + money(budget) + ' ausgegeben · Monat gesamt frei: ' + money(v.left);
+    $('hero-sub').textContent = free >= 0 && daysLeft > 0 ? 'etwa ' + money(Math.max(0, free) / daysLeft) + ' pro Tag' : 'Budget überschritten';
+    const ring = $('ring-fill');
+    ring.style.strokeDasharray = RING;
+    ring.style.strokeDashoffset = RING * (1 - Math.min(1, r));
+    ring.setAttribute('class', 'ring-fill ' + level(r));
+    $('ring-tick').style.transform = 'rotate(' + (timeRatio * 360) + 'deg)';
+    const pill = $('hero-pill');
+    const ahead = r - timeRatio;
+    pill.className = 'pill ' + (r >= 1 ? 'over' : ahead > 0.05 ? 'warn' : '');
+    pill.textContent = r >= 1 ? 'Budget aufgebraucht' : ahead > 0.05 ? 'Etwas schneller als geplant' : 'Im Plan';
+    $('stat-spent').textContent = money(spent);
+    $('stat-budget').textContent = money(budget);
+    $('stat-left').textContent = money(v.left);
+    $('stat-left').style.color = v.left < 0 ? 'var(--red)' : '';
 
     // Kategorien
-    const cats = $('cats');
-    cats.textContent = '';
+    const cats = $('cats'), zero = $('cats-zero');
+    cats.textContent = ''; zero.textContent = '';
     v.categories.forEach((c) => {
-      const left = round2(c.budget - c.spent);
-      const ratio = c.budget > 0 ? c.spent / c.budget : (c.spent > 0 ? 1 : 0);
-      const b = el('button', 'cat' + (c.budget > 0 ? '' : ' nobudget'));
-      const row = el('div', 'cat-row');
-      row.append(el('span', 'cat-emoji', emojiFor(c.name)), el('span', 'cat-name', c.name.trim()));
-      const l = el('span', 'cat-left' + (left < 0 ? ' neg' : ''), c.budget > 0 ? money(left) : (c.spent > 0 ? '−' + money(c.spent) : ''));
-      row.append(l);
-      b.append(row);
-      const bar = el('div', 'bar');
-      const fill = el('div', 'fill ' + colorFor(ratio));
-      fill.style.width = Math.min(100, ratio * 100) + '%';
-      const mk = el('div', 'marker');
-      mk.style.left = (timeRatio * 100) + '%';
-      bar.append(fill, mk);
-      b.append(bar);
-      b.append(el('div', 'cat-sub', c.budget > 0
-        ? (left >= 0 ? 'noch ' + money(left) + ' von ' + money(c.budget) : money(-left) + ' über Budget von ' + money(c.budget))
-        : (c.spent > 0 ? money(c.spent) + ' ausgegeben, kein Budget' : 'kein Budget')));
-      b.addEventListener('click', () => openSheet(c.name));
-      cats.append(b);
+      const row = el('button', 'row');
+      row.append(iconFor(c.name));
+      const main = el('div', 'row-main');
+      const head = el('div', 'row-head');
+      head.append(el('span', 'row-title', c.name.trim()));
+      main.append(head);
+      if (c.budget > 0) {
+        const left = round2(c.budget - c.spent);
+        const ratio = c.spent / c.budget;
+        head.append(el('span', 'row-value' + (left < 0 ? ' neg' : ''), money(left)));
+        main.append(el('div', 'row-sub', left >= 0 ? 'noch frei von ' + money(c.budget) : money(-left) + ' über dem Budget von ' + money(c.budget)));
+        const bar = el('div', 'bar');
+        const fill = el('i', level(ratio)); fill.style.width = Math.min(100, ratio * 100) + '%';
+        const tick = el('b'); tick.style.left = (timeRatio * 100) + '%';
+        bar.append(fill, tick);
+        main.append(bar);
+        row.append(main);
+        cats.append(row);
+      } else {
+        head.append(el('span', 'row-value', c.spent > 0 ? money(c.spent) : ''));
+        main.append(el('div', 'row-sub', c.spent > 0 ? 'ausgegeben diesen Monat' : 'noch nichts ausgegeben'));
+        row.append(main);
+        zero.append(row);
+      }
+      row.append(el('span', 'chev', '›'));
+      row.addEventListener('click', () => openSheet(c.name));
     });
+    $('cats-zero-title').hidden = zero.children.length === 0;
+    zero.hidden = zero.children.length === 0;
 
-    // Einträge
-    const list = $('entries');
+    // Einträge (schmal: unten, breit: links)
+    renderEntries($('entries'), v.entries, 15);
+    renderEntries($('entries-wide'), v.entries, 8);
+    setSync(syncStatus);
+  }
+
+  function renderEntries(list, entries, max) {
     list.textContent = '';
-    if (!v.entries.length) list.append(el('div', 'empty', 'Noch keine Ausgaben in diesem Monat.'));
-    v.entries.slice(0, 20).forEach((e) => {
-      const row = el('div', 'entry');
-      row.append(el('span', 'cat-emoji', emojiFor(e.category)));
-      const main = el('div', 'entry-main');
-      main.append(el('div', 'entry-cat', e.category.trim() || '–'));
-      const sub = el('div', 'entry-note', shortDate(e.date) + (e.note ? ' · ' + e.note : ''));
-      if (e.pending) { sub.append(' '); sub.append(el('span', 'pending-tag', '⏳ wird gesendet')); }
+    if (!entries.length) { list.append(el('div', 'empty', 'Noch keine Ausgaben in diesem Monat.')); return; }
+    entries.slice(0, max).forEach((e) => {
+      const row = el('div', 'row');
+      row.append(iconFor(e.category));
+      const main = el('div', 'row-main');
+      main.append(el('div', 'row-title', e.note || e.category.trim() || '–'));
+      const sub = el('div', 'row-sub', shortDate(e.date) + (e.note ? ' · ' + e.category.trim() : ''));
+      if (e.pending) sub.append(el('span', 'pending-tag', ' · wird gesendet'));
       main.append(sub);
-      row.append(main, el('span', 'entry-amt', money(e.amount)));
+      row.append(main, el('span', 'row-value', money(e.amount)));
       if (e.id) {
-        const del = el('button', 'entry-del', '✕');
+        const del = el('button', 'del', '✕');
         del.setAttribute('aria-label', 'Eintrag löschen');
         del.addEventListener('click', () => {
           if (!del.classList.contains('armed')) {
-            del.classList.add('armed'); del.textContent = 'Löschen?';
+            del.classList.add('armed'); del.textContent = 'Löschen';
             setTimeout(() => { del.classList.remove('armed'); del.textContent = '✕'; }, 3000);
             return;
           }
@@ -229,7 +280,6 @@
       }
       list.append(row);
     });
-    setSync(syncStatus);
   }
 
   function removeEntry(e) {
@@ -262,7 +312,9 @@
     pick.textContent = '';
     v.categories.forEach((c) => {
       const b = el('button');
-      b.append(el('span', 'e', emojiFor(c.name)), document.createTextNode(c.name.trim()));
+      const ic = iconFor(c.name);
+      b.style.setProperty('--tint', ic.style.getPropertyValue('--tint'));
+      b.append(ic, el('span', '', c.name.trim()));
       b.dataset.name = c.name;
       if (c.name === chosen) b.classList.add('on');
       b.addEventListener('click', () => {
@@ -282,6 +334,7 @@
   function amountValue() { return amountStr ? Number(amountStr.replace(',', '.')) : 0; }
   function updateSheet() {
     $('amount-text').textContent = amountStr || '0';
+    $('amount-text').parentNode.classList.toggle('empty-amt', !amountStr);
     $('save').disabled = !(amountValue() > 0 && chosen);
   }
 
@@ -312,9 +365,21 @@
     toast(navigator.onLine === false ? 'Gespeichert ✓ wird gesendet, sobald Netz da ist' : 'Gespeichert ✓');
     sync();
   });
+  // Tastatur am Laptop: Ziffern, Komma, Rücktaste, Enter, Esc
+  document.addEventListener('keydown', (ev) => {
+    if ($('sheet').hidden) return;
+    if (ev.key === 'Escape') { closeSheet(); return; }
+    if (ev.target.tagName === 'INPUT') { if (ev.key === 'Enter') $('save').click(); return; }
+    const map = { Backspace: 'back', ',': ',', '.': ',' };
+    const k = /^[0-9]$/.test(ev.key) ? ev.key : map[ev.key];
+    if (k) { ev.preventDefault(); const b = $('keypad').querySelector('[data-k="' + k + '"]'); if (b) b.click(); }
+    else if (ev.key === 'Enter') { ev.preventDefault(); $('save').click(); }
+  });
   $('cancel').addEventListener('click', closeSheet);
   $('sheet-bg').addEventListener('click', closeSheet);
   $('fab').addEventListener('click', () => openSheet(null));
+  $('add-top').addEventListener('click', () => openSheet(null));
+  window.addEventListener('scroll', () => { $('navbar').classList.toggle('scrolled', window.scrollY > 40); }, { passive: true });
   $('refresh').addEventListener('click', () => sync());
 
   let toastTimer;
