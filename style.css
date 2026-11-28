@@ -204,6 +204,18 @@ input[type="date"].row-input { -webkit-appearance: none; appearance: none; displ
 .amount.credit .cur { color: color-mix(in srgb, var(--green) 50%, transparent); }
 #more-rows { margin-bottom: 4px; }
 
+/* Demo-Hinweis, Link ändern, Fehler */
+.demo-banner { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: color-mix(in srgb, var(--orange) 14%, var(--card)); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 12px; font-size: 15px; }
+.link-row { color: var(--blue); justify-content: center; }
+.setup-cancel { margin-top: 10px; }
+.error-box { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.4); display: grid; place-items: center; padding: 24px; animation: fade .2s ease; }
+.error-card { background: var(--card); border-radius: 14px; max-width: 320px; width: 100%; text-align: center; overflow: hidden; }
+.error-title { font-weight: 600; padding: 18px 16px 4px; }
+.error-card p { margin: 0; padding: 0 16px 16px; font-size: 13px; line-height: 1.4; color: var(--label); }
+.error-actions { display: grid; grid-template-columns: 1fr 1fr; border-top: 0.5px solid var(--separator); }
+.error-actions .link { padding: 11px 0; }
+.error-actions .link + .link { border-left: 0.5px solid var(--separator); }
+
 /* ---------- Einrichtung ---------- */
 .setup { min-height: 100dvh; display: grid; place-items: center; padding: var(--pad); }
 .setup-card { width: 100%; max-width: 400px; text-align: center; }

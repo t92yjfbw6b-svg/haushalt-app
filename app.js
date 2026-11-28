@@ -13,18 +13,38 @@
   const standalone = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
 
   // ---------- Zugang aus dem Link lesen ----------
+  /** Liest s (Script) und k (Schlüssel) aus dem Link. Verzeiht Leerzeichen, %23, &amp; und Text davor. */
   function parseLink(text) {
-    const i = text.indexOf('#');
-    const p = new URLSearchParams(i >= 0 ? text.slice(i + 1) : text);
-    if (p.has('demo')) return { demo: true };
-    const s = p.get('s'), k = p.get('k');
-    if (s && k && /^[\w-]{10,}$/.test(s) && /^[\w-]{16,}$/.test(k)) return { s: s, k: k };
+    let t = String(text || '').trim().replace(/\s+/g, '');
+    try { t = t.replace(/%23/gi, '#').replace(/%26/gi, '&').replace(/%3D/gi, '='); } catch (e) { /* egal */ }
+    t = t.replace(/&amp;/g, '&');
+    if (/[#&?]demo\b/.test(t) || t === 'demo') return { demo: true };
+    const s = (t.match(/[#&?]s=([\w-]{10,})/) || [])[1];
+    const k = (t.match(/[#&?]k=([\w-]{16,})/) || [])[1];
+    if (s && k) return { s: s, k: k };
     return null;
+  }
+  /** Erklärt, warum ein eingefügter Text kein gültiger Link ist. */
+  function linkProblem(text) {
+    const t = String(text || '').trim();
+    if (!t) return 'Bitte füge deinen persönlichen Link ein.';
+    if (/script\.google(usercontent)?\.com/.test(t) && !/[#&]k=/.test(t)) {
+      return 'Das ist die Adresse des Scripts, nicht dein persönlicher Link. Den persönlichen Link findest du im Protokoll, nachdem du in Apps Script „linksAnzeigen“ ausgeführt hast. Er beginnt mit ' + location.origin + location.pathname + '#s=…';
+    }
+    if (/github\.io/.test(t) && !/[#&]s=/.test(t)) {
+      return 'Das ist nur die allgemeine Adresse der App. Dein persönlicher Link ist länger und enthält hinten „#s=…&k=…“. Du findest ihn in Apps Script: Funktion „linksAnzeigen“ ausführen, dann steht er unten im Ausführungsprotokoll.';
+    }
+    if (!/[#&]s=/.test(t)) return 'Im Link fehlt der Teil „#s=…“. Bitte kopiere die ganze Zeile aus dem Protokoll.';
+    if (!/[#&]k=/.test(t)) return 'Im Link fehlt der Schlüssel „&k=…“. Bitte kopiere die ganze Zeile aus dem Protokoll.';
+    return 'Der Link ist unvollständig. Bitte kopiere die ganze Zeile aus dem Protokoll.';
   }
 
   let cfg = LS.get('cfg', null);
   const fromHash = location.hash.length > 1 ? parseLink(location.hash) : null;
   if (fromHash) {
+    if (!cfg || cfg.s !== fromHash.s || cfg.k !== fromHash.k || !!cfg.demo !== !!fromHash.demo) {
+      ['state', 'past', 'months'].forEach((k) => LS.del(k)); // anderer Link: alten Stand vergessen
+    }
     cfg = fromHash;
     LS.set('cfg', cfg);
     // In der installierten App den Schlüssel aus der Adresszeile entfernen.
@@ -101,6 +121,7 @@
   let viewMonth = null;                   // null = aktueller Monat
   let usage = LS.get('usage', {});        // wie oft welche Kategorie benutzt wurde
   let syncStatus = 'ok';
+  let lastError = null;
   let syncing = false;
 
   /** Kategorien nach Nutzung sortiert (bei Gleichstand wie in der Tabelle). */
@@ -143,9 +164,19 @@
     if (cfg.demo) return Demo.call(body);
     const url = 'https://script.google.com/macros/s/' + encodeURIComponent(cfg.s) + '/exec';
     // text/plain => keine CORS-Vorabfrage; Apps Script antwortet mit JSON
-    const res = await fetch(url, { method: 'POST', body: JSON.stringify(body), redirect: 'follow', cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+    let res;
+    try {
+      res = await fetch(url, { method: 'POST', body: JSON.stringify(body), redirect: 'follow', cache: 'no-store' });
+    } catch (e) {
+      throw new Error(navigator.onLine === false ? 'offline'
+        : 'Script nicht erreichbar. Prüfe in Apps Script unter „Bereitstellungen verwalten“: Typ Web-App, Ausführen als „Ich“, Zugriff „Jeder“.');
+    }
+    if (res.status === 404) throw new Error('Script-Adresse nicht gefunden (404). Bitte in Apps Script „linksAnzeigen“ ausführen und den neuen Link öffnen.');
+    if (!res.ok) throw new Error('Script antwortet mit Fehler ' + res.status + '.');
+    const txt = await res.text();
+    try { return JSON.parse(txt); } catch (e) {
+      throw new Error('Script verlangt eine Anmeldung. Bitte bei der Bereitstellung den Zugriff auf „Jeder“ stellen (nicht „Jeder mit Google-Konto“).');
+    }
   }
 
   async function sync() {
@@ -158,10 +189,14 @@
       const want = viewMonth;
       const r = await callServer({ key: cfg.k, add: add, remove: remove, month: want || undefined });
       if (!r.ok) {
-        if (r.error === 'unauthorized') { setSync('error', 'Link ungültig'); toast('Dieser Link ist gesperrt oder ungültig.'); }
-        else { setSync('error', 'Fehler'); toast('Fehler: ' + r.error); }
+        lastError = r.error === 'unauthorized'
+          ? 'Der Schlüssel in deinem Link passt nicht (gesperrt oder neu erstellt). Bitte den aktuellen Link aus „linksAnzeigen“ öffnen.'
+          : 'Fehler im Script: ' + r.error;
+        setSync('error', 'Fehler');
+        showError();
         return;
       }
+      lastError = null;
       const done = new Set(r.added || []);
       queue = queue.filter((q) => !done.has(q.id));
       const gone = new Set(r.removed || []);
@@ -179,7 +214,9 @@
       render();
       if (queue.length) setTimeout(sync, 300); // Rest nachschicken
     } catch (e) {
-      setSync(navigator.onLine === false ? 'offline' : (queue.length || removals.length ? 'pending' : 'offline'));
+      const msg = String(e && e.message || e);
+      if (msg === 'offline') setSync('offline');
+      else { lastError = msg; setSync('error', 'Fehler'); if (!state && !viewMonth) showError(); }
     } finally {
       syncing = false;
       if (syncStatus === 'busy') setSync('ok');
@@ -438,7 +475,15 @@
   $('cancel').addEventListener('click', closeSheet);
   $('sheet-bg').addEventListener('click', closeSheet);
   window.addEventListener('scroll', () => { $('navbar').classList.toggle('scrolled', window.scrollY > 40); }, { passive: true });
-  $('refresh').addEventListener('click', () => sync());
+  $('refresh').addEventListener('click', () => { if (syncStatus === 'error' && lastError) showError(); sync(); });
+
+  function showError() {
+    if (!lastError) return;
+    $('error-text').textContent = lastError;
+    $('error-box').hidden = false;
+  }
+  $('error-close').addEventListener('click', () => { $('error-box').hidden = true; });
+  $('error-relink').addEventListener('click', () => { $('error-box').hidden = true; openSetup(); });
 
   let toastTimer;
   function toast(text) {
@@ -480,12 +525,30 @@
   $('back-now').addEventListener('click', () => goMonth(null));
 
   // ---------- Einrichtung ----------
-  $('setup-save').addEventListener('click', () => {
-    const c = parseLink($('setup-input').value.trim());
-    if (!c) { $('setup-error').hidden = false; return; }
+  function useConfig(c) {
+    const changed = !cfg || cfg.s !== c.s || cfg.k !== c.k || !!cfg.demo !== !!c.demo;
     cfg = c; LS.set('cfg', cfg);
+    if (changed) { // anderer Link: alten Stand vergessen (noch nicht gesendete Ausgaben bleiben)
+      state = null; past = {}; months = []; viewMonth = null; lastError = null;
+      LS.del('state'); LS.del('past'); LS.del('months');
+    }
+  }
+  function openSetup() {
+    $('setup-input').value = '';
+    $('setup-error').hidden = true;
+    $('setup-cancel').hidden = !cfg;
+    $('setup').hidden = false; $('main').hidden = true;
+  }
+  $('setup-save').addEventListener('click', () => {
+    const raw = $('setup-input').value;
+    const c = parseLink(raw);
+    if (!c) { $('setup-error').textContent = linkProblem(raw); $('setup-error').hidden = false; return; }
+    useConfig(c);
     start();
   });
+  $('setup-cancel').addEventListener('click', () => start());
+  $('relink').addEventListener('click', () => { closeMonths(); openSetup(); });
+  $('demo-relink').addEventListener('click', openSetup);
 
   // ---------- Demo (zum Ausprobieren ohne Tabelle: Link mit #demo) ----------
   const Demo = {
@@ -547,12 +610,18 @@
 
   // ---------- Start ----------
   function start() {
-    if (!cfg) { $('setup').hidden = false; $('main').hidden = true; return; }
+    if (!cfg) { $('setup-cancel').hidden = true; $('setup').hidden = false; $('main').hidden = true; return; }
     $('setup').hidden = true; $('main').hidden = false;
+    $('demo-banner').hidden = !cfg.demo;
     render();
     sync();
   }
 
+  // Link geöffnet, während die App schon offen ist
+  window.addEventListener('hashchange', () => {
+    const c = location.hash.length > 1 ? parseLink(location.hash) : null;
+    if (c) { useConfig(c); start(); }
+  });
   window.addEventListener('online', sync);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); });
   setInterval(() => { if (queue.length || removals.length) sync(); }, 30000);

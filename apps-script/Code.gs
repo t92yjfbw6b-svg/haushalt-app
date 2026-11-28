@@ -14,6 +14,13 @@
 /** Adresse der App auf GitHub Pages (wird nach dem Veröffentlichen eingetragen). */
 const APP_URL = 'https://t92yjfbw6b-svg.github.io/haushalt-app/';
 
+/**
+ * Web-App-Adresse des Scripts. Nach „Bereitstellen“ zeigt Google sie an
+ * (beginnt mit https://script.google.com/macros/s/… und endet auf /exec).
+ * Hier zwischen die Anführungszeichen kopieren.
+ */
+const WEB_APP_URL = '';
+
 /** Wer bekommt einen eigenen Link? */
 const PERSONEN = ['Handy1', 'Handy2'];
 
@@ -355,9 +362,15 @@ function einrichten() {
 
 /** Zeigt die persönlichen Links im Protokoll an. */
 function linksAnzeigen() {
-  const url = ScriptApp.getService().getUrl();
-  if (!url) throw new Error('Bitte zuerst bereitstellen (Bereitstellen > Neue Bereitstellung > Web-App).');
-  const id = url.match(/\/s\/([^/]+)\//)[1];
+  // Im Editor liefert Google oft nur die Test-Adresse (/dev), die von außen nicht
+  // erreichbar ist. Deshalb zählt die oben eingetragene Web-App-Adresse.
+  const url = (WEB_APP_URL || '').trim();
+  const treffer = url.match(/\/macros\/s\/([\w-]+)\/exec/);
+  if (!treffer) {
+    throw new Error('Bitte oben bei WEB_APP_URL die Web-App-Adresse eintragen. Du findest sie unter ' +
+      'Bereitstellen > Bereitstellungen verwalten (sie endet auf /exec).');
+  }
+  const id = treffer[1];
   const schluessel = leseSchluessel_();
   Object.keys(schluessel).forEach(function (p) {
     Logger.log(p + ':  ' + APP_URL + '#s=' + id + '&k=' + schluessel[p]);

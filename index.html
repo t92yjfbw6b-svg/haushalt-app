@@ -28,7 +28,8 @@
         <input id="setup-input" class="field" type="url" placeholder="Persönlicher Link" autocomplete="off" autocapitalize="off" spellcheck="false">
       </div>
       <button id="setup-save" class="btn-filled">Verbinden</button>
-      <p class="setup-error" id="setup-error" hidden>Der Link ist nicht vollständig.</p>
+      <p class="setup-error" id="setup-error" hidden></p>
+      <button id="setup-cancel" class="link small setup-cancel" hidden>Abbrechen</button>
     </div>
   </section>
 
@@ -49,6 +50,11 @@
           <h1><button id="month" class="month-btn" aria-label="Monat wählen"><span id="month-name">…</span><svg class="month-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h1>
           <p id="day"></p>
           <button id="back-now" class="link small back-now" hidden></button>
+        </div>
+
+        <div class="demo-banner" id="demo-banner" hidden>
+          <span>Demo mit Beispieldaten</span>
+          <button id="demo-relink" class="link small">Eigenen Link eintragen</button>
         </div>
 
         <section class="card hero">
@@ -128,7 +134,20 @@
       <button id="months-close" class="link strong">Fertig</button>
     </div>
     <div class="list" id="month-list"></div>
+    <div class="list compact"><button id="relink" class="row link-row">Persönlichen Link ändern</button></div>
   </section>
+
+  <!-- Fehler erklären -->
+  <div id="error-box" class="error-box" hidden role="alertdialog" aria-labelledby="error-title">
+    <div class="error-card">
+      <div class="error-title" id="error-title">Verbindung zur Tabelle</div>
+      <p id="error-text"></p>
+      <div class="error-actions">
+        <button id="error-relink" class="link">Link ändern</button>
+        <button id="error-close" class="link strong">OK</button>
+      </div>
+    </div>
+  </div>
 
   <div id="toast" class="toast" hidden></div>
 

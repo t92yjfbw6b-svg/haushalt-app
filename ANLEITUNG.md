@@ -20,9 +20,16 @@ Die App besteht aus zwei Teilen:
    - Auf **Bereitstellen** klicken.
 6. Google fragt nach Berechtigungen. Klicke auf **Zugriff autorisieren** und wähle dein Konto.
    Es erscheint die Warnung „Google hat diese App nicht überprüft“. Das ist normal, weil es dein eigenes Script ist: **Erweitert > Zu … wechseln (unsicher)** und dann **Zulassen**.
-7. Wähle oben in der Leiste neben „Ausführen“ die Funktion **einrichten** aus und klicke auf **Ausführen**.
+7. Google zeigt jetzt die **Web-App-URL** an (beginnt mit `https://script.google.com/macros/s/…` und endet auf `/exec`). Auf **Kopieren** tippen.
+   Später findest du sie wieder unter **Bereitstellen > Bereitstellungen verwalten**.
+8. Ganz oben im Code steht `const WEB_APP_URL = '';`. Füge die kopierte Adresse zwischen die beiden Anführungszeichen ein, also so:
+   `const WEB_APP_URL = 'https://script.google.com/macros/s/AKfy…/exec';`
+   Dann **Speichern**.
+9. Wähle oben in der Leiste neben „Ausführen“ die Funktion **einrichten** aus und klicke auf **Ausführen**.
    Unten im **Ausführungsprotokoll** stehen jetzt zwei Links: „Handy1“ und „Handy2“, für jedes iPhone einer. (Die Namen kannst du oben bei `PERSONEN` ändern.)
-8. Fertig. In der Tabelle gibt es jetzt das Blatt „Dezember 2026“.
+   Jeder Link sieht so aus: `https://t92yjfbw6b-svg.github.io/haushalt-app/#s=AKfy…&k=1a2b3c…` (ziemlich lang).
+   **Das ist dein persönlicher Link.** Die kurze Adresse ohne `#s=…&k=…` reicht nicht.
+10. Fertig. In der Tabelle gibt es jetzt das Blatt „Dezember 2026“. Die Links kannst du jederzeit wieder mit der Funktion **linksAnzeigen** anzeigen lassen.
 
 > „Zugriff: Jeder“ heißt nur, dass die Brücke erreichbar ist. Ohne den geheimen Schlüssel aus eurem Link antwortet sie mit „unauthorized“ und gibt nichts heraus.
 
@@ -41,7 +48,11 @@ Die Adresse steht schon in `Code.gs` bei `APP_URL`. Hast du Teil 1 schon vorher 
 3. Unten auf **Teilen** (Viereck mit Pfeil) > **Zum Home-Bildschirm**.
 4. Ab jetzt die App immer über das Symbol auf dem Home-Bildschirm öffnen.
 
-Falls die App vom Home-Bildschirm nach dem Link fragt: den Link einfach in das Feld einfügen. Das ist nur einmal nötig.
+Falls die App vom Home-Bildschirm nach dem Link fragt: den **ganzen** persönlichen Link (mit `#s=…&k=…`) in das Feld einfügen. Das ist nur einmal nötig.
+
+Link später ändern: auf den Monatsnamen tippen > **Persönlichen Link ändern**.
+
+Ist der Punkt oben rechts rot, tippe darauf: Die App erklärt dann, was nicht stimmt.
 
 ---
 
